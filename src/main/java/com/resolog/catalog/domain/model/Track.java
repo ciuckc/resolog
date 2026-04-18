@@ -105,7 +105,15 @@ public class Track extends Auditable {
         this.audioUrl = audioUrl;
     }
 
-    public void updateTrackArtists(@NonNull Set<Artist> trackArtists) {
-        this.trackArtists = new HashSet<>(trackArtists);
+    public void addArtist(@NonNull Artist artist) {
+        this.trackArtists.add(artist);
     }
+
+    public void removeArtist(@NonNull Artist artist) {
+        if (!this.trackArtists.contains(artist)) {
+            throw new IllegalArgumentException("Artist does not exist");
+        }
+        this.trackArtists.remove(artist);
+    }
+
 }
