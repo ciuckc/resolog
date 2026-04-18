@@ -1,6 +1,7 @@
 package com.resolog.catalog.domain.model;
 
 import com.resolog.catalog.config.JpaConfig;
+import com.resolog.catalog.domain.repository.ArtistRepository;
 import com.resolog.catalog.domain.repository.ProductRepository;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,14 +21,19 @@ public class ProductTest {
 
     private Product product;
     private Product savedProduct;
+    private Artist artist;
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private ArtistRepository artistRepository;
 
     @BeforeEach
     protected void setUp() {
         product = TestFixtures.aProduct();
         savedProduct = productRepository.saveAndFlush(product);
+        artist = artistRepository.saveAndFlush(TestFixtures.anArtist());
     }
 
     @Test
@@ -190,6 +196,27 @@ public class ProductTest {
     public void testRejectCompletesWhenPublishing() {
         transitionStatusTo(savedProduct, ProductStatus.PUBLISHING);
         assertDoesNotThrow(() -> savedProduct.reject("hello"));
+    }
+
+    @Test
+    public void testAddArtistToProduct() {
+        savedProduct.addArtist(artist);
+        Product updated = productRepository.saveAndFlush(savedProduct);
+        assertEquals(1, updated.getArtists().size());
+    }
+
+    @Test
+    public void testRemoveArtistFromProduct() {
+        savedProduct.addArtist(artist);
+        productRepository.saveAndFlush(savedProduct);
+        savedProduct.removeArtist(artist);
+        Product updated = productRepository.saveAndFlush(savedProduct);
+        assertEquals(0, updated.getArtists().size());
+    }
+
+    @Test
+    public void testRemoveArtistNotInProductThrows() {
+        assertThrows(IllegalArgumentException.class, () -> savedProduct.removeArtist(artist));
     }
 
     private void transitionStatusTo(Product product, ProductStatus type) {

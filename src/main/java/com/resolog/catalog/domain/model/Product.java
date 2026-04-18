@@ -116,6 +116,17 @@ public class Product extends Auditable {
         this.releaseDate = releaseDate;
     }
 
+    public void addArtist(@NonNull Artist artist) {
+        this.artists.add(artist);
+    }
+
+    public void removeArtist(@NonNull Artist artist) {
+        if (!this.artists.contains(artist)) {
+            throw new IllegalArgumentException("Artist does not exist");
+        }
+        this.artists.remove(artist);
+    }
+
     // Little state machine helper since we don't want to expose the status directly without checking it
 
     public void redraft() {
