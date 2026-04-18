@@ -17,14 +17,13 @@ public class ArtistTest {
 
     @Test
     public void artistSavedHasFieldsSet() {
-        final String name = "Name";
-        Artist artist = Artist.create(name);
+        Artist artist = TestFixtures.anArtist();
 
         Artist savedArtist = artistRepository.saveAndFlush(artist);
 
         assertThat(savedArtist).isNotNull();
         assertThat(savedArtist.getId()).isNotNull();
-        assertThat(savedArtist.getName()).isEqualTo(name);
+        assertThat(savedArtist.getName()).isEqualTo(TestFixtures.ARTIST_NAME);
         assertThat(savedArtist.getLabel()).isNull();
         assertThat(savedArtist.getBiography()).isNull();
     }
@@ -39,8 +38,7 @@ public class ArtistTest {
 
     @Test
     public void artistCanBeFoundById() {
-        final String name = "Name";
-        Artist artist = Artist.create(name);
+        Artist artist = TestFixtures.anArtist();
 
         Artist savedArtist = artistRepository.saveAndFlush(artist);
         Artist foundArtist = artistRepository.findById(savedArtist.getId()).orElse(null);
@@ -52,27 +50,29 @@ public class ArtistTest {
 
     @Test
     public void artistCanBeUpdated() {
-        final String name = "Name";
-        Artist artist = Artist.create(name);
+        Artist artist = TestFixtures.anArtist();
 
         Artist savedArtist = artistRepository.saveAndFlush(artist);
 
-        assertThat(savedArtist.getName()).isEqualTo(name);
+        assertThat(savedArtist.getName()).isEqualTo(TestFixtures.ARTIST_NAME);
 
         final String newName = "NewName";
-        artist.setName(newName);
+        artist.updateName(newName);
+        artist.updateLabel(TestFixtures.ARTIST_LABEL);
+        artist.updateBiography(TestFixtures.ARTIST_BIOGRAPHY);
 
         Artist updatedArtist = artistRepository.saveAndFlush(artist);
 
         assertThat(updatedArtist).isNotNull();
         assertThat(updatedArtist.getId()).isEqualTo(savedArtist.getId());
         assertThat(updatedArtist.getName()).isEqualTo(newName);
+        assertThat(updatedArtist.getLabel()).isEqualTo(TestFixtures.ARTIST_LABEL);
+        assertThat(updatedArtist.getBiography()).isEqualTo(TestFixtures.ARTIST_BIOGRAPHY);
     }
 
     @Test
     public void artistCanBeDeleted() {
-        final String name = "Name";
-        Artist artist = Artist.create(name);
+        Artist artist = TestFixtures.anArtist();
 
         Artist savedArtist = artistRepository.saveAndFlush(artist);
 
