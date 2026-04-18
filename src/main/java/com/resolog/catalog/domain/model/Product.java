@@ -57,6 +57,9 @@ public class Product extends Auditable {
     @Column(name = DbSchema.Products.ARTWORK_URL)
     private String artworkUrl;
 
+    @Column(name = DbSchema.Products.STATUS_REASON)
+    private String statusReason;
+
     private BigDecimal price;
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -83,7 +86,6 @@ public class Product extends Auditable {
         product.status = ProductStatus.DRAFT;
         return product;
     }
-
 
     public void updateType(@NonNull ProductType type) {
         this.type = type;
@@ -135,6 +137,7 @@ public class Product extends Auditable {
             throw new IllegalStateException("Product must be in draft status to be published");
         }
         this.status = ProductStatus.PUBLISHING;
+        this.statusReason = null;
     }
 
     public void publish() {
@@ -162,5 +165,16 @@ public class Product extends Auditable {
             throw new IllegalStateException("Product must be unpublished or in draft staus in order to be deleted");
         }
         this.status = ProductStatus.DELETED;
+    }
+
+    public void reject(@NonNull String reason) {
+        if (this.status != ProductStatus.PUBLISHING) {
+            throw new IllegalStateException("Can only reject product a product that's currently publishing");
+        }
+        if (reason.isBlank()) {
+            throw new IllegalArgumentException("Reason cannot be blank");
+        }
+        this.status = ProductStatus.DRAFT;
+        this.statusReason = reason;
     }
 }

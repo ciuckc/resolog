@@ -175,6 +175,23 @@ public class ProductTest {
         assertEquals(savedProduct.getStatus(), foundProduct.getStatus());
     }
 
+    @Test
+    public void testRejectThrowsWhenNotPublishing() {
+        assertThrows(IllegalStateException.class, () -> product.reject("hello"));
+    }
+
+    @Test
+    public void testRejectThrowsWhenReasonIsBlank() {
+        transitionStatusTo(savedProduct, ProductStatus.PUBLISHING);
+        assertThrows(IllegalArgumentException.class, () -> product.reject(""));
+    }
+
+    @Test
+    public void testRejectCompletesWhenPublishing() {
+        transitionStatusTo(savedProduct, ProductStatus.PUBLISHING);
+        assertDoesNotThrow(() -> savedProduct.reject("hello"));
+    }
+
     private void transitionStatusTo(Product product, ProductStatus type) {
         switch (type) {
             case PUBLISHING -> product.markAsPublishing();

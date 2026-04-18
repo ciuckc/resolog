@@ -17,7 +17,7 @@ public final class DbSchema {
         public static final String RELEASE_DATE = "release_date";
         public static final String ARTWORK_URL = "artwork_url";
         public static final String ARTIST_ID = "artist_id";
-
+        public static final String STATUS_REASON = "status_reason";
         private Products() {}
     }
 
