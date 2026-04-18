@@ -118,7 +118,7 @@ public class Product extends Auditable {
 
     // Little state machine helper since we don't want to expose the status directly without checking it
 
-    public void markAsDraft() {
+    public void redraft() {
         if (this.status == ProductStatus.DRAFT) {
             return;
         }
@@ -129,7 +129,7 @@ public class Product extends Auditable {
         this.status = ProductStatus.DRAFT;
     }
 
-    public void markAsPublishing() {
+    public void submit() {
         if (this.status == ProductStatus.PUBLISHING) {
             return;
         }
@@ -150,7 +150,7 @@ public class Product extends Auditable {
         this.status = ProductStatus.PUBLISHED;
     }
 
-    public void markAsUnpublished() {
+    public void unpublish() {
         if (this.status == ProductStatus.UNPUBLISHED) {
             return;
         }

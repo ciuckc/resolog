@@ -82,11 +82,11 @@ public class ProductTest {
 
     @Test
     public void testAllTransitions() {
-        assertDoesNotThrow(() -> savedProduct.markAsDraft());
-        assertDoesNotThrow(() -> savedProduct.markAsPublishing());
+        assertDoesNotThrow(() -> savedProduct.redraft());
+        assertDoesNotThrow(() -> savedProduct.submit());
         assertDoesNotThrow(() -> savedProduct.publish());
-        assertDoesNotThrow(() -> savedProduct.markAsUnpublished());
-        assertDoesNotThrow(() -> savedProduct.markAsDraft());
+        assertDoesNotThrow(() -> savedProduct.unpublish());
+        assertDoesNotThrow(() -> savedProduct.redraft());
     }
 
     @Test
@@ -95,38 +95,38 @@ public class ProductTest {
     }
 
     @Test
-    public void testMarkAsDraftNoOp() {
-        assertDoesNotThrow(() -> savedProduct.markAsDraft());
+    public void testRedraftNoOp() {
+        assertDoesNotThrow(() -> savedProduct.redraft());
     }
 
     @Test
-    public void testMarkAsDraftThrowsWhenPublished() {
+    public void testRedraftThrowsWhenPublished() {
         transitionStatusTo(savedProduct, ProductStatus.PUBLISHED);
-        assertThrows(IllegalStateException.class, () -> savedProduct.markAsDraft());
+        assertThrows(IllegalStateException.class, () -> savedProduct.redraft());
     }
 
     @Test
-    public void testMarkAsDraftThrowsWhenDeleted() {
+    public void testRedraftThrowsWhenDeleted() {
         transitionStatusTo(savedProduct, ProductStatus.DELETED);
-        assertThrows(IllegalStateException.class, () -> savedProduct.markAsDraft());
+        assertThrows(IllegalStateException.class, () -> savedProduct.redraft());
     }
 
     @Test
-    public void testMarkAsPublishingNoOp() {
+    public void testSubmitNoOp() {
         transitionStatusTo(savedProduct, ProductStatus.PUBLISHING);
-        assertDoesNotThrow(() -> savedProduct.markAsPublishing());
+        assertDoesNotThrow(() -> savedProduct.submit());
     }
 
     @Test
-    public void testMarkAsPublishingThrowsWhenPublished() {
+    public void testSubmitThrowsWhenPublished() {
         transitionStatusTo(savedProduct, ProductStatus.PUBLISHED);
-        assertThrows(IllegalStateException.class, () -> savedProduct.markAsPublishing());
+        assertThrows(IllegalStateException.class, () -> savedProduct.submit());
     }
 
     @Test
-    public void testMarkAsPublishingThrowsWhenDeleted() {
+    public void testSubmitThrowsWhenDeleted() {
         transitionStatusTo(savedProduct, ProductStatus.DELETED);
-        assertThrows(IllegalStateException.class, () -> savedProduct.markAsPublishing());
+        assertThrows(IllegalStateException.class, () -> savedProduct.submit());
     }
 
     @Test
@@ -194,20 +194,20 @@ public class ProductTest {
 
     private void transitionStatusTo(Product product, ProductStatus type) {
         switch (type) {
-            case PUBLISHING -> product.markAsPublishing();
+            case PUBLISHING -> product.submit();
             case PUBLISHED -> {
-                product.markAsPublishing();
+                product.submit();
                 product.publish();
             }
             case UNPUBLISHED -> {
-                product.markAsPublishing();
+                product.submit();
                 product.publish();
-                product.markAsUnpublished();
+                product.unpublish();
             }
             case DELETED -> {
-                product.markAsPublishing();
+                product.submit();
                 product.publish();
-                product.markAsUnpublished();
+                product.unpublish();
                 product.delete();
             }
             default -> {
