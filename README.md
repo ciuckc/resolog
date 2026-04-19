@@ -1,3 +1,5 @@
+![resolog](assets/resolog.png)
+
 # resolog
 
 ## Introduction
