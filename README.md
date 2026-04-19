@@ -7,38 +7,51 @@ how that ends up with every listener.
 
 It is an event-driven backend service for a music product catalog. Built using Java, Spring Boot, Kafka, Redis, and
 MariaDB for persistence. It exposes a RESTful API for managing music products and publishes domain events through Kafka,
-when state changes occur in the catalog.
-
-## Scope
-
-The scope of this service is to be the central repository for artists and their music products. It is responsible for
-the following:
-* Registering artists and their music products
-* Managing music product lifecycle (creation, update, deletion)
-* Validating the music product is complete before being published and rejecting incomplete products
-* Emitting domain events for when state changes happen
-* Consumers that react to domain events are stubbed as logs unless otherwise noted.
-
-### Out of scope
-
-The scope of this service does not include:
-* Music product content moderation (copyright, deepfakes, explicit content)
-* Music product publishing to other streaming platforms (Apple, Spotify, YouTube, SoundCloud)
-
-## Success criteria
+when state changes occur in the catalog. Publishing to external platforms (Spotify, Apple Music) and content moderation
+beyond logging are out of scope.
 
 ## Architectural decisions
 
 ### Model
 
-The catalog here holds the state of all the music products. Each music product can be of type Album, EP or Single.
-An Album is a collection of Tracks, with no strict duration constraint. An EP is a collection of Tracks with a
-duration of maximum 30 minutes. A Single is a single Track. It also holds the release date, label, genre, and copyright.
+An `Artist` is the entity that represents a person or group that created the music product. It contains the artist's
+name, biography and label.
 
-A Track is the data model that holds the metadata and audio content of a music product. It contains the artists that
+A `Track` is the data model that holds the metadata and audio content of a music product. It contains the artists that
 are featured on the track, the track duration, the track number, and the title.
 
-An Artist is the entity that represents a person or group that created the music product. It contains the artist's name,
-biography, label, and a list of music products they have created.
+Each music product can be of type `Album`, `EP` or `Single`. An `Album` and `EP` is a collection of tracks, while a 
+`Single` is one `Track`, although not enforced in the model. A music product also holds the release date, genre and
+most importantly the publishing status of that product. The publishing lifecycle follows a simple state machine.
+
+Upon creation the music product starts in a `DRAFT` status. After the updates, a customer can decide to delete
+it, bringing it to a `DELETED` status, or submit a request to publish it. Upon submission, the system would set
+its internal status to `PUBLISHING`, where certain consumers can validate if the music product can be set to
+`PUBLISHED`. If the validations fail, the system will reject the submission and revert the status back to `DRAFT`. The
+customer will be provided with the reason of rejection. If the submission succeeds, it will be set to `PUBLISHED`. A
+musical product can also be taken down from the catalog. A `PUBLISHED` status allows the customer to take down the
+music product, prompting the system to mark the status to `UNPUBLISHED`. From here the customer can revert it back to
+`DRAFT`, or `DELETE` the musical product entirely. A `DELETED` product acts as a soft delete in order to preserve it
+for auditing purposes.
+
+```mermaid
+stateDiagram-v2
+    [*] --> DRAFT : CreateProduct
+    DRAFT --> PUBLISHING : PublishProduct (customer)
+    PUBLISHING --> PUBLISHED : publish (system)
+    PUBLISHING --> DRAFT : reject (system)
+    PUBLISHED --> UNPUBLISHED : UnpublishProduct (customer)
+    UNPUBLISHED --> DRAFT : redraft (customer)
+    UNPUBLISHED --> DELETED : DeleteProduct (customer)
+    DRAFT --> DELETED : DeleteProduct (customer)
+```
+
+### Infrastructure
+
+Optimistic locking through `@Version` on the models prevents lost updates from concurrent requests on the same entity.
 
 ## What I would do differently
+
+* Even though in-service concurrent requests are handled from UPDATE clashes through @Version, updates from clients
+working with stale data versions are not. To fix this I would add ETags to the service's responses, and then let the
+server validate the If-Match header.
