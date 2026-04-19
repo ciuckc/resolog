@@ -28,13 +28,14 @@ most importantly the publishing status of that product. The publishing lifecycle
 
 Upon creation the music product starts in a `DRAFT` status. After the updates, a customer can decide to delete
 it, bringing it to a `DELETED` status, or submit a request to publish it. Upon submission, the system would set
-its internal status to `PUBLISHING`, where certain consumers can validate if the music product can be set to
-`PUBLISHED`. If the validations fail, the system will reject the submission and revert the status back to `DRAFT`. The
-customer will be provided with the reason of rejection. If the submission succeeds, it will be set to `PUBLISHED`. A
-musical product can also be taken down from the catalog. A `PUBLISHED` status allows the customer to take down the
-music product, prompting the system to mark the status to `UNPUBLISHED`. From here the customer can revert it back to
-`DRAFT`, or `DELETE` the musical product entirely. A `DELETED` product acts as a soft delete in order to preserve it
-for auditing purposes.
+its  status to `PUBLISHING`. Customers will poll this status waiting for it to become `PUBLISHED`.
+
+If the validations fail, the system will reject the submission and revert the status back to `DRAFT`. The customer will
+be provided with the reason of rejection. If the submission succeeds, it will be set to `PUBLISHED`. A musical product
+can also be taken down from the catalog. A `PUBLISHED` status allows the customer to take down the music product,
+prompting the system to mark the status to `UNPUBLISHED`. From here the customer can revert it back to `DRAFT`, or
+`DELETE` the musical product entirely. A `DELETED` product acts as a soft delete in order to preserve it for auditing
+purposes.
 
 ```mermaid
 stateDiagram-v2
@@ -43,7 +44,7 @@ stateDiagram-v2
     PUBLISHING --> PUBLISHED : publish (system)
     PUBLISHING --> DRAFT : reject (system)
     PUBLISHED --> UNPUBLISHED : UnpublishProduct (customer)
-    UNPUBLISHED --> DRAFT : redraft (customer)
+    UNPUBLISHED --> DRAFT : RevertToDraft (customer)
     UNPUBLISHED --> DELETED : DeleteProduct (customer)
     DRAFT --> DELETED : DeleteProduct (customer)
 ```
