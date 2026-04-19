@@ -18,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.ToString;
+import org.springframework.data.annotation.Version;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -59,6 +60,9 @@ public class Product extends Auditable {
 
     @Column(name = DbSchema.Products.STATUS_REASON)
     private String statusReason;
+
+    @Version
+    private Long version;
 
     private BigDecimal price;
 

@@ -17,6 +17,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.ToString;
+import org.springframework.data.annotation.Version;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -45,6 +46,9 @@ public class Track extends Auditable {
 
     @Column(nullable = false, name = DbSchema.Tracks.AUDIO_URL)
     private String audioUrl;
+
+    @Version
+    private Long version;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = DbSchema.Tracks.PRODUCT_ID)
