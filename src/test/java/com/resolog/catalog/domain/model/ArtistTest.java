@@ -1,5 +1,6 @@
 package com.resolog.catalog.domain.model;
 
+import com.resolog.catalog.TestFixtures;
 import com.resolog.catalog.config.JpaConfig;
 import com.resolog.catalog.domain.repository.ArtistRepository;
 import org.junit.jupiter.api.Test;
