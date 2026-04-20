@@ -5,12 +5,15 @@ import com.resolog.catalog.api.mapper.CatalogMapper;
 import com.resolog.catalog.api.request.CreateProductRequest;
 import com.resolog.catalog.api.request.UpdateProductRequest;
 import com.resolog.catalog.api.response.GetProductResponse;
+import com.resolog.catalog.domain.model.OutboxEvent;
 import com.resolog.catalog.domain.model.Product;
 import com.resolog.catalog.domain.model.ProductStatus;
 import com.resolog.catalog.domain.model.ProductType;
 import com.resolog.catalog.domain.repository.ArtistRepository;
 import com.resolog.catalog.domain.repository.ProductRepository;
 import com.resolog.catalog.domain.specs.ProductSpecs;
+import com.resolog.catalog.messaging.event.ProductPublishingEvent;
+import com.resolog.catalog.messaging.event.ProductUnpublishedEvent;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,10 +28,16 @@ public class ProductService {
 
     private final ArtistRepository artistRepository;
 
+    private final OutboxEventService outboxEventService;
+
     private final ProductRepository productRepository;
 
-    public ProductService(ArtistRepository artistRepository, ProductRepository productRepository) {
+    public ProductService(
+            ArtistRepository artistRepository,
+            OutboxEventService outboxEventService,
+            ProductRepository productRepository) {
         this.artistRepository = artistRepository;
+        this.outboxEventService = outboxEventService;
         this.productRepository = productRepository;
     }
 
@@ -95,10 +104,19 @@ public class ProductService {
         productRepository.save(product);
     }
 
+    @Transactional
     public GetProductResponse publishProduct(UUID id) {
         Product product =  getActiveEntityById(id);
         product.submit();
-        return CatalogMapper.toDto(productRepository.save(product));
+
+        Product savedProduct = productRepository.save(product);
+
+        outboxEventService.publish(
+                product.getId(),
+                ProductPublishingEvent.class.getSimpleName(),
+                new ProductPublishingEvent(product.getId()));
+
+        return CatalogMapper.toDto(savedProduct);
     }
 
     public GetProductResponse revertProductToDraft(UUID id) {
@@ -107,10 +125,20 @@ public class ProductService {
         return CatalogMapper.toDto(productRepository.save(product));
     }
 
+    @Transactional
     public GetProductResponse unpublishProduct(UUID id) {
         Product product =  getActiveEntityById(id);
         product.unpublish();
-        return CatalogMapper.toDto(productRepository.save(product));
+
+        Product savedProduct = productRepository.save(product);
+
+        outboxEventService.publish(
+                product.getId(),
+                ProductUnpublishedEvent.class.getSimpleName(),
+                new ProductUnpublishedEvent(product.getId())
+        );
+
+        return CatalogMapper.toDto(savedProduct);
     }
 
     @Transactional

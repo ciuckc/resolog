@@ -9,8 +9,11 @@ import com.resolog.catalog.domain.model.Product;
 import com.resolog.catalog.domain.model.ProductStatus;
 import com.resolog.catalog.domain.model.ProductType;
 import com.resolog.catalog.TestFixtures;
+import com.resolog.catalog.domain.model.OutboxEventStatus;
 import com.resolog.catalog.domain.repository.ArtistRepository;
+import com.resolog.catalog.domain.repository.OutboxEventRepository;
 import com.resolog.catalog.domain.repository.ProductRepository;
+import com.resolog.catalog.messaging.event.ProductPublishingEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +40,9 @@ class ProductServiceTest {
 
     @Autowired
     private ArtistRepository artistRepository;
+
+    @Autowired
+    private OutboxEventRepository outboxEventRepository;
 
     private Artist savedArtist;
     private Product savedProduct;
@@ -183,6 +189,16 @@ class ProductServiceTest {
     void addArtistsToProduct_throwsWhenArtistNotFound() {
         assertThrows(NoSuchElementException.class,
                 () -> productService.addArtistsToProduct(savedProduct.getId(), Set.of(java.util.UUID.randomUUID())));
+    }
+
+    @Test
+    void publishProduct_writesOutboxEvent() {
+        productService.publishProduct(savedProduct.getId());
+
+        var events = outboxEventRepository.findByStatus(OutboxEventStatus.PENDING);
+        assertTrue(events.stream().anyMatch(e ->
+                e.getAggregateId().equals(savedProduct.getId()) &&
+                e.getEventType().equals(ProductPublishingEvent.class.getSimpleName())));
     }
 
     @Test
