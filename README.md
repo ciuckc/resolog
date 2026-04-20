@@ -123,7 +123,9 @@ via `POST /products/{productId}/tracks/{id}/featured-artists` for creation, and
 
 Optimistic locking through `@Version` on the models prevents lost updates from concurrent requests on the same entity.
 
-## What I would do differently
+## What I would do differently / or if I had more time
+
+* Support pagination as our catalog grows
 
 * Even though in-service concurrent requests are handled from UPDATE clashes through @Version, updates from clients
 working with stale data versions are not. To fix this I would add ETags to the service's responses, and then let the
@@ -134,3 +136,10 @@ server validate the If-Match header.
 
 * The following product publishing model follows the principle of once it's published, then you would have to take it
 down, in order to perform updates. A future version would allow atomic updates of the product while live.
+
+* API versioning in case of breaking changes.
+
+* Append OpenTelemetry trace id to Kafka message header, in order to distribute it across consumers. This would help
+with the gathering of logs and debugging.
+
+* Configure a trace backend server to record the spans of each call across all distributed systems (AWS X-Ray UI style).
