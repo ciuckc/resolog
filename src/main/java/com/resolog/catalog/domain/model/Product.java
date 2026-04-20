@@ -12,13 +12,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.ToString;
-import org.springframework.data.annotation.Version;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -82,20 +82,22 @@ public class Product extends Auditable {
             BigDecimal price,
             @NonNull LocalDate releaseDate) {
         Product product = new Product();
+        product.status = ProductStatus.DRAFT;
         product.updateType(type);
         product.updateTitle(title);
         product.updateGenre(genre);
         product.updatePrice(price);
         product.updateReleaseDate(releaseDate);
-        product.status = ProductStatus.DRAFT;
         return product;
     }
 
     public void updateType(@NonNull ProductType type) {
+        this.ensureEditable();
         this.type = type;
     }
 
     public void updateTitle(@NonNull String title) {
+        this.ensureEditable();
         if (title.isBlank()) {
             throw new IllegalArgumentException("Title cannot be blank");
         }
@@ -103,28 +105,40 @@ public class Product extends Auditable {
     }
 
     public void updateGenre(@NonNull String genre) {
+        this.ensureEditable();
         if (genre.isBlank()) {
             throw new IllegalArgumentException("Genre cannot be blank");
         }
         this.genre = genre;
     }
 
+    public void updateReleaseDate(@NonNull LocalDate releaseDate) {
+        this.ensureEditable();
+        this.releaseDate = releaseDate;
+    }
+
     public void updatePrice(BigDecimal price) {
+        this.ensureEditable();
         if (price != null && price.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Price cannot be negative");
         }
         this.price = price;
     }
-
-    public void updateReleaseDate(@NonNull LocalDate releaseDate) {
-        this.releaseDate = releaseDate;
+    public void updateArtworkUrl(String artworkUrl) {
+        this.ensureEditable();
+        if (artworkUrl.isBlank()) {
+            throw new IllegalArgumentException("ArtworkUrl cannot be blank");
+        }
+        this.artworkUrl = artworkUrl;
     }
 
     public void addArtist(@NonNull Artist artist) {
+        this.ensureEditable();
         this.artists.add(artist);
     }
 
     public void removeArtist(@NonNull Artist artist) {
+        this.ensureEditable();
         if (!this.artists.contains(artist)) {
             throw new IllegalArgumentException("Artist does not exist");
         }
@@ -191,5 +205,11 @@ public class Product extends Auditable {
         }
         this.status = ProductStatus.DRAFT;
         this.statusReason = reason;
+    }
+
+    private void ensureEditable() {
+        if (this.status != ProductStatus.DRAFT) {
+            throw new IllegalStateException("Can only be edited while in DRAFT status");
+        }
     }
 }
