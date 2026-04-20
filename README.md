@@ -60,37 +60,19 @@ that have side effects, such as, state transitions and relationship management b
 All mutating operations return the updated resource back to the requester in order to save a following GET. State
 transitioning operations should be polled while they are processed asynchronously.
 
-
-| Method | Path | Description   |
-|--------|------|---------------|
-| GET | /products | List active products |
-| GET | /products/{id} | Get product by ID |
-| POST | /products | Create product |
-| PATCH | /products/{id} | Update product fields |
-| DELETE | /products/{id} | Delete product|
-| POST | /products/{id}/publish | Submit for publishing |
-| POST | /products/{id}/unpublish | Unpublish product |
-| POST | /products/{id}/revert | Revert to draft |
-| POST | /products/{id}/artists | Add artists to product |
-| POST | /products/{id}/artists/remove | Remove artists from product |
-| GET | /artists | List artists  |
-| GET | /artists/{id} | Get artist by ID |
-| POST | /artists | Create artist |
-| PATCH | /artists/{id} | Update artist fields |
-| DELETE | /artists/{id} | Delete artist |
-| GET | /products/{id}/tracks | List tracks for product |
-| GET | /products/{id}/tracks/{trackId} | Get track by Id |
-| POST | /products/{id}/tracks | Create track  |
-| PATCH | /products/{id}/tracks/{trackId} | Update track fields |
-| DELETE | /products/{id}/tracks/{trackId} | Delete track  |
-| POST | /products/{id}/tracks/{trackId}/featured-artists | Add featured artists to track |
-| POST | /products/{id}/tracks/{trackId}/featured-artists/remove | Remove featured artists from track |
-
 #### Artists
 
 The `Artist` is the first entity that need to be created in order to create a music product. The name field is mandatory
 , while the label and bio can be added later. The `Artist` can exist as a main contributor on a music product, or as a 
 featured artist on a `Track`.
+
+| Method | Path | Description   |
+|--------|------|---------------| 
+| GET | /artists | List artists  |
+| GET | /artists/{id} | Get artist by ID |
+| POST | /artists | Create artist |
+| PATCH | /artists/{id} | Update artist fields |
+| DELETE | /artists/{id} | Delete artist |
 
 #### Products
 
@@ -104,6 +86,19 @@ Deleted products are soft deleted and excluded from all API responses. The `DELE
 It also allows the add or removal of main artists, through `POST /products/{id}/artists`, respectively 
 `POST /products/{id}/artists/remove`.
 
+| Method | Path | Description   |
+|--------|------|---------------|
+| GET | /products | List active products |
+| GET | /products/{id} | Get product by ID |
+| POST | /products | Create product |
+| PATCH | /products/{id} | Update product fields |
+| DELETE | /products/{id} | Delete product|
+| POST | /products/{id}/publish | Submit for publishing |
+| POST | /products/{id}/unpublish | Unpublish product |
+| POST | /products/{id}/revert | Revert to draft |
+| POST | /products/{id}/artists | Add artists to product |
+| POST | /products/{id}/artists/remove | Remove artists from product |
+
 #### Tracks
 
 Tracks are always accessed in the context of a product (`/products/{id}/tracks`). Track responses
@@ -113,6 +108,16 @@ from the URL.
 Featured artists on a track are distinct from the product's main artists and are managed separately
 via `POST /products/{productId}/tracks/{id}/featured-artists` for creation, and 
 `POST /products/{productId}/tracks/{id}/featured-artists/remove` for deletion.
+
+| Method | Path | Description   |
+|--------|------|---------------|
+| GET | /products/{id}/tracks | List tracks for product |
+| GET | /products/{id}/tracks/{trackId} | Get track by Id |
+| POST | /products/{id}/tracks | Create track  |
+| PATCH | /products/{id}/tracks/{trackId} | Update track fields |
+| DELETE | /products/{id}/tracks/{trackId} | Delete track  |
+| POST | /products/{id}/tracks/{trackId}/featured-artists | Add featured artists to track |
+| POST | /products/{id}/tracks/{trackId}/featured-artists/remove | Remove featured artists from track |
 
 ### Infrastructure
 
