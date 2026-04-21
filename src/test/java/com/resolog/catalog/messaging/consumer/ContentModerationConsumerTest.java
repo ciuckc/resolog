@@ -87,6 +87,27 @@ class ContentModerationConsumerTest {
     }
 
     @Test
+    void handle_declinesWhenPriceIsNull() throws Exception {
+        var event = new ProductSubmittedForPublishing(
+                productId,
+                TestFixtures.PRODUCT_TYPE,
+                ProductStatus.DRAFT,
+                TestFixtures.PRODUCT_TITLE,
+                TestFixtures.PRODUCT_GENRE,
+                TestFixtures.PRODUCT_RELEASE_DATE,
+                TestFixtures.PRODUCT_ARTWORK_URL,
+                null,
+                Set.of(),
+                List.of(TestFixtures.aTrackPayload(1)));
+
+        consumer.handle(objectMapper.writeValueAsString(event), messageIdBytes, ack);
+
+        ArgumentCaptor<ProductSubmissionDeclined> captor = ArgumentCaptor.forClass(ProductSubmissionDeclined.class);
+        verify(outboxEventService).publish(eq(productId), captor.capture());
+        assertEquals("Product must have a price", captor.getValue().reason());
+    }
+
+    @Test
     void handle_declinesWhenArtworkUrlIsInvalid() throws Exception {
         var event = new ProductSubmittedForPublishing(
                 productId,

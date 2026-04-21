@@ -74,6 +74,9 @@ public class ContentModerationConsumer {
     }
 
     private String validate(ProductSubmittedForPublishing event) {
+        if (event.price() == null) {
+            return "Product must have a price";
+        }
         if (event.tracks().isEmpty()) {
             return "Product must have at least one track";
         }
