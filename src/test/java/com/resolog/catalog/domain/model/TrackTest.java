@@ -39,39 +39,39 @@ public class TrackTest {
     }
 
     @Test
-    void testTrackIsSaved() {
+    public void create_persistsTrack() {
         assertNotNull(track.getId());
     }
 
     @Test
-    void testNullTitleThrows() {
+    public void updateTitle_throwsWhenNull() {
         assertThrows(NullPointerException.class, () -> track.updateTitle(null));
     }
 
     @Test
-    void testBlankTitleThrows() {
+    public void updateTitle_throwsWhenBlank() {
         assertThrows(IllegalArgumentException.class, () -> track.updateTitle(""));
     }
 
     @Test
-    void testZeroTrackNumberThrows() {
+    public void updateTrackNumber_throwsWhenZero() {
         assertThrows(IllegalArgumentException.class, () -> track.updateTrackNumber(0));
     }
 
     @Test
-    void testZeroDurationThrows() {
+    public void updateDurationSeconds_throwsWhenZero() {
         assertThrows(IllegalArgumentException.class, () -> track.updateDurationSeconds(0));
     }
 
     @Test
-    void testAddArtistToTrack() {
+    public void addArtist_linksArtist() {
         track.addArtist(artist);
         Track updated = trackRepository.saveAndFlush(track);
         assertEquals(1, updated.getTrackArtists().size());
     }
 
     @Test
-    void testRemoveArtistFromTrack() {
+    public void removeArtist_unlinksArtist() {
         track.addArtist(artist);
         trackRepository.saveAndFlush(track);
         track.removeArtist(artist);
@@ -80,7 +80,7 @@ public class TrackTest {
     }
 
     @Test
-    void testRemoveArtistNotInTrackThrows() {
+    public void removeArtist_throwsWhenArtistNotLinked() {
         assertThrows(IllegalArgumentException.class, () -> track.removeArtist(artist));
     }
 }

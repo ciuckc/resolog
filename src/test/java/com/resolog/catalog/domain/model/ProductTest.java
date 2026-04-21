@@ -38,18 +38,18 @@ public class ProductTest {
     }
 
     @Test
-    public void testNullPtrCreateThrowsNPE() {
+    public void create_throwsWhenArgsAreNull() {
         assertThrows(NullPointerException.class, () -> product = Product.create(null, null, null, null, null));
     }
 
     @Test
-    public void testProductIsSaved() {
+    public void create_persistsProduct() {
         assertNotNull(savedProduct);
         assertEquals(product, savedProduct);
     }
 
     @Test
-    public void testUpdateSavedType() {
+    public void updateType_updatesType() {
         savedProduct.updateType(ProductType.ALBUM);
         final Product updatedProduct = productRepository.saveAndFlush(savedProduct);
 
@@ -58,37 +58,37 @@ public class ProductTest {
     }
 
     @Test
-    public void testUpdateSavedTitleThrowsWhenEmpty() {
+    public void updateTitle_throwsWhenEmpty() {
         assertThrows(IllegalArgumentException.class, () -> savedProduct.updateTitle(""));
     }
 
     @Test
-    public void testUpdateSavedTitleThrowsWhenHasSpacesAndNewLine() {
+    public void updateTitle_throwsWhenBlank() {
         assertThrows(IllegalArgumentException.class, () -> savedProduct.updateTitle("   \n"));
     }
 
     @Test
-    public void testUpdateGenreThrowsWhenEmpty() {
+    public void updateGenre_throwsWhenEmpty() {
         assertThrows(IllegalArgumentException.class, () -> savedProduct.updateGenre(""));
     }
 
     @Test
-    public void testUpdateGenreThrowsWhenHasSpacesAndNewLine() {
+    public void updateGenre_throwsWhenBlank() {
         assertThrows(IllegalArgumentException.class, () -> savedProduct.updateGenre("   \n"));
     }
 
     @Test
-    public void testUpdatePriceThrowsWhenNegative() {
+    public void updatePrice_throwsWhenNegative() {
         assertThrows(IllegalArgumentException.class, () -> savedProduct.updatePrice(BigDecimal.valueOf(-10.0)));
     }
 
     @Test
-    public void testUpdateReleaseDateThrowsWhenNull() {
+    public void updateReleaseDate_throwsWhenNull() {
         assertThrows(NullPointerException.class, () -> savedProduct.updateReleaseDate(null));
     }
 
     @Test
-    public void testAllTransitions() {
+    public void lifecycle_completesFullTransitionSequence() {
         assertDoesNotThrow(() -> savedProduct.redraft());
         assertDoesNotThrow(() -> savedProduct.submit());
         assertDoesNotThrow(() -> savedProduct.publish());
@@ -97,82 +97,82 @@ public class ProductTest {
     }
 
     @Test
-    public void testInitialStatusIsDraft() {
+    public void create_initialStatusIsDraft() {
         assertEquals(ProductStatus.DRAFT, savedProduct.getStatus());
     }
 
     @Test
-    public void testRedraftNoOp() {
+    public void redraft_succeedsWhenDraft() {
         assertDoesNotThrow(() -> savedProduct.redraft());
     }
 
     @Test
-    public void testRedraftThrowsWhenPublished() {
+    public void redraft_throwsWhenPublished() {
         transitionStatusTo(savedProduct, ProductStatus.PUBLISHED);
         assertThrows(IllegalStateException.class, () -> savedProduct.redraft());
     }
 
     @Test
-    public void testRedraftThrowsWhenDeleted() {
+    public void redraft_throwsWhenDeleted() {
         transitionStatusTo(savedProduct, ProductStatus.DELETED);
         assertThrows(IllegalStateException.class, () -> savedProduct.redraft());
     }
 
     @Test
-    public void testSubmitNoOp() {
+    public void submit_succeedsWhenAlreadyPublishing() {
         transitionStatusTo(savedProduct, ProductStatus.PUBLISHING);
         assertDoesNotThrow(() -> savedProduct.submit());
     }
 
     @Test
-    public void testSubmitThrowsWhenPublished() {
+    public void submit_throwsWhenPublished() {
         transitionStatusTo(savedProduct, ProductStatus.PUBLISHED);
         assertThrows(IllegalStateException.class, () -> savedProduct.submit());
     }
 
     @Test
-    public void testSubmitThrowsWhenDeleted() {
+    public void submit_throwsWhenDeleted() {
         transitionStatusTo(savedProduct, ProductStatus.DELETED);
         assertThrows(IllegalStateException.class, () -> savedProduct.submit());
     }
 
     @Test
-    public void testPublishNoOp() {
+    public void publish_succeedsWhenAlreadyPublished() {
         transitionStatusTo(savedProduct, ProductStatus.PUBLISHED);
         assertDoesNotThrow(() -> savedProduct.publish());
     }
 
     @Test
-    public void testPublishThrowsWhenDraft() {
+    public void publish_throwsWhenDraft() {
         assertThrows(IllegalStateException.class, () -> savedProduct.publish());
     }
 
     @Test
-    public void testPublishThrowsWhenUnpublished() {
+    public void publish_throwsWhenUnpublished() {
         transitionStatusTo(savedProduct, ProductStatus.UNPUBLISHED);
         assertThrows(IllegalStateException.class, () -> savedProduct.publish());
     }
 
     @Test
-    public void testPublishThrowsWhenDeleted() {
+    public void publish_throwsWhenDeleted() {
         transitionStatusTo(savedProduct, ProductStatus.DELETED);
         assertThrows(IllegalStateException.class, () -> savedProduct.publish());
     }
 
     @Test
-    public void testDeleteThrowsWhenPublished() {
+    public void delete_throwsWhenPublished() {
         transitionStatusTo(savedProduct, ProductStatus.PUBLISHED);
         assertThrows(IllegalStateException.class, () -> savedProduct.delete());
     }
 
     @Test
-    public void testDeleteThrowsWhenPublishing() {
+    public void delete_throwsWhenPublishing() {
         transitionStatusTo(savedProduct, ProductStatus.PUBLISHING);
         assertThrows(IllegalStateException.class, () -> savedProduct.delete());
     }
 
     @Test
-    public void testFindSavedProductById() {
+    public void findById_returnsProduct() {
         Product foundProduct = productRepository.findById(savedProduct.getId()).orElse(null);
         assertNotNull(foundProduct);
         assertEquals(savedProduct.getId(), foundProduct.getId());
@@ -183,31 +183,31 @@ public class ProductTest {
     }
 
     @Test
-    public void testRejectThrowsWhenNotPublishing() {
+    public void reject_throwsWhenNotPublishing() {
         assertThrows(IllegalStateException.class, () -> product.reject("hello"));
     }
 
     @Test
-    public void testRejectThrowsWhenReasonIsBlank() {
+    public void reject_throwsWhenReasonIsBlank() {
         transitionStatusTo(savedProduct, ProductStatus.PUBLISHING);
         assertThrows(IllegalArgumentException.class, () -> product.reject(""));
     }
 
     @Test
-    public void testRejectCompletesWhenPublishing() {
+    public void reject_succeedsWhenPublishing() {
         transitionStatusTo(savedProduct, ProductStatus.PUBLISHING);
         assertDoesNotThrow(() -> savedProduct.reject("hello"));
     }
 
     @Test
-    public void testAddArtistToProduct() {
+    public void addArtist_linksArtist() {
         savedProduct.addArtist(artist);
         Product updated = productRepository.saveAndFlush(savedProduct);
         assertEquals(1, updated.getArtists().size());
     }
 
     @Test
-    public void testRemoveArtistFromProduct() {
+    public void removeArtist_unlinksArtist() {
         savedProduct.addArtist(artist);
         productRepository.saveAndFlush(savedProduct);
         savedProduct.removeArtist(artist);
@@ -216,7 +216,7 @@ public class ProductTest {
     }
 
     @Test
-    public void testRemoveArtistNotInProductThrows() {
+    public void removeArtist_throwsWhenArtistNotLinked() {
         assertThrows(IllegalArgumentException.class, () -> savedProduct.removeArtist(artist));
     }
 

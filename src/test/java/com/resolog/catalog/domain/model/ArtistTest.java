@@ -20,7 +20,7 @@ public class ArtistTest {
     private ArtistRepository artistRepository;
 
     @Test
-    public void artistSavedHasFieldsSet() {
+    public void create_persistsWithFields() {
         Artist artist = TestFixtures.anArtist();
 
         Artist savedArtist = artistRepository.saveAndFlush(artist);
@@ -33,7 +33,7 @@ public class ArtistTest {
     }
 
     @Test
-    public void artistSavedWithNullNameThrowsException() {
+    public void save_throwsWhenNameIsNull() {
         Artist artist = new Artist();
 
         assertThrows(DataIntegrityViolationException.class, () -> artistRepository.saveAndFlush(artist));
@@ -41,7 +41,7 @@ public class ArtistTest {
 
 
     @Test
-    public void artistCanBeFoundById() {
+    public void findById_returnsArtist() {
         Artist artist = TestFixtures.anArtist();
 
         Artist savedArtist = artistRepository.saveAndFlush(artist);
@@ -53,7 +53,7 @@ public class ArtistTest {
     }
 
     @Test
-    public void artistCanBeUpdated() {
+    public void update_updatesFields() {
         Artist artist = TestFixtures.anArtist();
 
         Artist savedArtist = artistRepository.saveAndFlush(artist);
@@ -75,7 +75,7 @@ public class ArtistTest {
     }
 
     @Test
-    public void artistCanBeDeleted() {
+    public void delete_removesArtist() {
         Artist artist = TestFixtures.anArtist();
 
         Artist savedArtist = artistRepository.saveAndFlush(artist);
