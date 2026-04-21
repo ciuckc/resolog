@@ -26,6 +26,7 @@ public final class CatalogMapper {
                 product.getArtists().stream()
                         .map(CatalogMapper::toDto)
                         .collect(Collectors.toSet()),
+                product.getStatusReason(),
                 product.getVersion()
         );
     }

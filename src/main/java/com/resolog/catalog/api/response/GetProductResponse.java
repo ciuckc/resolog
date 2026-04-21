@@ -28,6 +28,8 @@ public record GetProductResponse (
 
     Set<GetArtistResponse> artists,
 
+    String statusReason,
+
     Long version
 
 ) { }
