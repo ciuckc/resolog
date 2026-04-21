@@ -13,11 +13,17 @@ import com.resolog.catalog.domain.model.OutboxEventStatus;
 import com.resolog.catalog.domain.repository.ArtistRepository;
 import com.resolog.catalog.domain.repository.OutboxEventRepository;
 import com.resolog.catalog.domain.repository.ProductRepository;
-import com.resolog.catalog.messaging.event.ProductPublishingEvent;
+import com.resolog.catalog.messaging.event.ProductCreated;
+import com.resolog.catalog.messaging.event.ProductDeleted;
+import com.resolog.catalog.messaging.event.ProductPublished;
+import com.resolog.catalog.messaging.event.ProductRejected;
+import com.resolog.catalog.messaging.event.ProductSubmittedForPublishing;
+import com.resolog.catalog.messaging.event.ProductUnpublished;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.NoSuchElementException;
@@ -29,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
+@EmbeddedKafka(partitions = 1)
 @Transactional
 class ProductServiceTest {
 
@@ -55,7 +62,7 @@ class ProductServiceTest {
 
     @Test
     void createProduct_createsDraftProduct() {
-        GetProductResponse response = productService.createProduct(TestFixtures.aCreateProductRequest());
+        GetProductResponse response = productService.createProduct(TestFixtures.aCreateProductRequest(Set.of(savedArtist.getId())));
 
         assertNotNull(response.id());
         assertEquals(ProductStatusView.DRAFT, response.status());
@@ -198,7 +205,66 @@ class ProductServiceTest {
         var events = outboxEventRepository.findByStatus(OutboxEventStatus.PENDING);
         assertTrue(events.stream().anyMatch(e ->
                 e.getAggregateId().equals(savedProduct.getId()) &&
-                e.getEventType().equals(ProductPublishingEvent.class.getSimpleName())));
+                e.getEventType().equals(ProductSubmittedForPublishing.class.getSimpleName())));
+    }
+
+    @Test
+    void createProduct_writesOutboxEvent() {
+        productService.createProduct(TestFixtures.aCreateProductRequest(Set.of(savedArtist.getId())));
+
+        var events = outboxEventRepository.findByStatus(OutboxEventStatus.PENDING);
+        assertTrue(events.stream().anyMatch(e ->
+                e.getEventType().equals(ProductCreated.class.getSimpleName())));
+    }
+
+    @Test
+    void deleteProduct_writesOutboxEvent() {
+        productService.deleteProduct(savedProduct.getId());
+
+        var events = outboxEventRepository.findByStatus(OutboxEventStatus.PENDING);
+        assertTrue(events.stream().anyMatch(e ->
+                e.getAggregateId().equals(savedProduct.getId()) &&
+                e.getEventType().equals(ProductDeleted.class.getSimpleName())));
+    }
+
+    @Test
+    void unpublishProduct_writesOutboxEvent() {
+        savedProduct.submit();
+        savedProduct.publish();
+        productRepository.save(savedProduct);
+
+        productService.unpublishProduct(savedProduct.getId());
+
+        var events = outboxEventRepository.findByStatus(OutboxEventStatus.PENDING);
+        assertTrue(events.stream().anyMatch(e ->
+                e.getAggregateId().equals(savedProduct.getId()) &&
+                e.getEventType().equals(ProductUnpublished.class.getSimpleName())));
+    }
+
+    @Test
+    void confirmPublished_writesOutboxEvent() {
+        savedProduct.submit();
+        productRepository.save(savedProduct);
+
+        productService.confirmPublished(savedProduct.getId());
+
+        var events = outboxEventRepository.findByStatus(OutboxEventStatus.PENDING);
+        assertTrue(events.stream().anyMatch(e ->
+                e.getAggregateId().equals(savedProduct.getId()) &&
+                e.getEventType().equals(ProductPublished.class.getSimpleName())));
+    }
+
+    @Test
+    void rejectProduct_writesOutboxEvent() {
+        savedProduct.submit();
+        productRepository.save(savedProduct);
+
+        productService.rejectProduct(savedProduct.getId(), "Bad content");
+
+        var events = outboxEventRepository.findByStatus(OutboxEventStatus.PENDING);
+        assertTrue(events.stream().anyMatch(e ->
+                e.getAggregateId().equals(savedProduct.getId()) &&
+                e.getEventType().equals(ProductRejected.class.getSimpleName())));
     }
 
     @Test

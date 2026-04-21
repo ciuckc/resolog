@@ -1,0 +1,8 @@
+spring:
+  kafka:
+    bootstrap-servers: ${spring.embedded.kafka.brokers}
+
+logging:
+  level:
+    org.apache.kafka: WARN
+    kafka: WARN
