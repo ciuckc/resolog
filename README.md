@@ -223,7 +223,7 @@ the message id to the database and commits the offset.
 If a message keeps failing after all retry attempts, it is moved to a Dead Letter Topic so it does not block the rest of
 the queue. From there it can be inspected and replayed once the underlying issue is resolved.
 
-#### Publishing workflow
+#### Publishing product workflow
 
 When a customer submits a product for publishing, the status transitions to `PUBLISHING` and a
 `ProductSubmittedForPublishing` event is produced. The content moderation consumer picks it up and validates the
