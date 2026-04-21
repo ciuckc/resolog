@@ -3,17 +3,37 @@ management:
     sampling:
       probability: 1.0
 
+logging:
+  level:
+    org.apache.kafka: WARN
+    kafka: WARN
+    org.springframework.kafka: WARN
+
 spring:
   application:
     name: resolog
 
   datasource:
-    url: jdbc:h2:mem:resolve
-    driverClassName: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:mariadb://localhost:3306/resolog
+    driverClassName: org.mariadb.jdbc.Driver
+    username: resolog
+    password: resolog
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
-    show-sql: true
+      ddl-auto: validate
+    show-sql: false
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: catalog-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      enable-auto-commit: false
+    listener:
+      ack-mode: manual
