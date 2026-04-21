@@ -36,6 +36,7 @@ public class Product extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @EqualsAndHashCode.Include
+    @Column(name = DbSchema.Products.ID)
     private UUID id;
 
     @Column(nullable = false)

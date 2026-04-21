@@ -28,6 +28,7 @@ public class OutboxEvent {
     @Id
     @EqualsAndHashCode.Include
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = DbSchema.OutboxEvents.ID)
     private UUID id;
 
     @Column(nullable = false, name = DbSchema.OutboxEvents.AGGREGATE_ID)
@@ -60,6 +61,11 @@ public class OutboxEvent {
         event.payload = payload;
         event.createdAt = Instant.now();
         return event;
+    }
+
+    public void markSent() {
+        this.status = OutboxEventStatus.SENT;
+        this.sentAt = Instant.now();
     }
 
     @PrePersist

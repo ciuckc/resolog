@@ -33,6 +33,7 @@ public class Track extends Auditable {
     @Id
     @EqualsAndHashCode.Include
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = DbSchema.Tracks.ID)
     private UUID id;
 
     @Column(nullable = false)

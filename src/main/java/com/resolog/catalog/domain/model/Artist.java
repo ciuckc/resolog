@@ -25,6 +25,7 @@ public class Artist extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @EqualsAndHashCode.Include
+    @Column(name = DbSchema.Artists.ID)
     private UUID id;
 
     @Column(nullable = false)
