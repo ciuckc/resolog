@@ -19,9 +19,7 @@ import java.util.UUID;
 public class ArtistService {
 
     private final ArtistRepository artistRepository;
-
     private final ProductRepository productRepository;
-
     private final TrackRepository trackRepository;
 
     public ArtistService(ArtistRepository artistRepository, ProductRepository productRepository, TrackRepository trackRepository) {
